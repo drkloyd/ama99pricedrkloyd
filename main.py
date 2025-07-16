@@ -127,7 +127,7 @@ async def handle_(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔍 Fiyatlar çekiliyor, lütfen bekleyiniz...")
     prices_text, image_url, product_title, _ = await get_prices_simple(asin)
-    message_text = f"*{product_title}*\n\n{prices_text}\n\n🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥"
+    message_text = f"*{product_title}*\n\n{prices_text}\n\n🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥Ilk🔥"
 
     if image_url.startswith("http"):
         try:
