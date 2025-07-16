@@ -116,7 +116,7 @@ async def get_prices_simple(asin: str) -> tuple[str, str, str, str]:
         logging.warning(f"get_prices_simple hatası: {e}")
         return f"❌ Hata oluştu: {e}", "", "", "COM"
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global last_heartbeat
     last_heartbeat = time.time()
     await asyncio.sleep(2)
@@ -127,7 +127,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔍 Fiyatlar çekiliyor, lütfen bekleyiniz...")
     prices_text, image_url, product_title, _ = await get_prices_simple(asin)
-    message_text = f"*{product_title}*\n\n{prices_text}"
+    message_text = f"*{product_title}*\n\n{prices_text}\n\n🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥"
 
     if image_url.startswith("http"):
         try:
