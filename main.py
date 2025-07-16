@@ -103,18 +103,26 @@ async def fetch_amazon_image_and_title_simple(asin: str, country_code: str) -> t
         logging.warning(f"Amazon'dan veri alınamadı: {e}")
         return "", f"{asin} Ürünü"
 
-async def get_prices_simple(asin: str) -> tuple[str, str, str, str]:
+async def get_prices_simple(asin: str, retries: int = 3) -> tuple[str, str, str, str]:
     url = f"https://webprice.eu/amazon/{asin}/"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                html = await resp.text()
-                prices_text, first_country = parse_prices_from_html(html, asin)
-                image_url, product_title = await fetch_amazon_image_and_title_simple(asin, first_country)
-                return prices_text, image_url, product_title, first_country
-    except Exception as e:
-        logging.warning(f"get_prices_simple hatası: {e}")
-        return f"❌ Hata oluştu: {e}", "", "", "COM"
+    for attempt in range(1, retries + 1):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    html = await resp.text()
+                    prices_text, first_country = parse_prices_from_html(html, asin)
+                    if "Ürün bulunamadı" in prices_text and attempt < retries:
+                        logging.warning(f"{asin} için {attempt}. deneme başarısız, tekrar deneniyor...")
+                        await asyncio.sleep(1.5 * attempt)  # Artan bekleme süresi
+                        continue
+                    image_url, product_title = await fetch_amazon_image_and_title_simple(asin, first_country)
+                    return prices_text, image_url, product_title, first_country
+        except Exception as e:
+            logging.warning(f"get_prices_simple hatası (deneme {attempt}): {e}")
+            if attempt == retries:
+                return f"❌ Hata oluştu: {e}", "", "", "COM"
+            await asyncio.sleep(1.5 * attempt)
+    return "❌ Ürün bulunamadı veya fiyat bilgisi yok.", "", "", "COM"
 
 async def handle_(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global last_heartbeat
