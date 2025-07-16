@@ -77,10 +77,10 @@ def parse_prices_from_html(html: str, asin: str) -> tuple[str, str]:
     return result.strip(), first_country_code
 
 async def fetch_amazon_image_and_title_simple(asin: str, country_code: str) -> tuple[str, str]:
-    url = f"https://www.amazon.{country_code.lower()}/dp/{asin}"
+    url = f"https://www.amazon.com/dp/{asin}"
     headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "en-US,en;q=0.9",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Accept-Language": "en-GB,en;q=0.9,de;q=0.5,fr;q=0.3",
         "Accept": "text/html"
     }
     try:
@@ -105,39 +105,23 @@ async def fetch_amazon_image_and_title_simple(asin: str, country_code: str) -> t
 
 async def get_prices_simple(asin: str, retries: int = 5) -> tuple[str, str, str, str]:
     url = f"https://webprice.eu/amazon/{asin}/"
-    
-    # Amazon domain dönüşüm tablosu
-    domain_map = {
-        "COM": "com", "DE": "de", "FR": "fr", "ES": "es", "PL": "pl", "SE": "se",
-        "COM.BE": "be", "NL": "nl"
-    }
-
     for attempt in range(1, retries + 1):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
                     html = await resp.text()
                     prices_text, first_country = parse_prices_from_html(html, asin)
-
-                    # Eğer fiyat bulunamadıysa tekrar dene
                     if "Ürün bulunamadı" in prices_text and attempt < retries:
                         logging.warning(f"{asin} için {attempt}. deneme başarısız, tekrar deneniyor...")
-                        await asyncio.sleep(2.5 * attempt)
+                        await asyncio.sleep(4.0 * attempt)
                         continue
-
-                    # Ülke kodunu uygun domain'e çevir
-                    amazon_domain = domain_map.get(first_country, "com")
-
-                    # Amazon'dan başlık ve görseli çek
-                    image_url, product_title = await fetch_amazon_image_and_title_simple(asin, amazon_domain)
+                    image_url, product_title = await fetch_amazon_image_and_title_simple(asin, "com")
                     return prices_text, image_url, product_title, first_country
         except Exception as e:
             logging.warning(f"get_prices_simple hatası (deneme {attempt}): {e}")
             if attempt == retries:
                 return f"❌ Hata oluştu: {e}", "", "", "COM"
-            await asyncio.sleep(2.5 * attempt)
-
-    # Tüm denemeler başarısızsa: yine de başlık gelsin
+            await asyncio.sleep(4.0 * attempt)
     image_url, product_title = await fetch_amazon_image_and_title_simple(asin, "com")
     return "❌ Fiyat bilgisi alınamadı.", image_url, product_title, "COM"
 
@@ -152,8 +136,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔍 Fiyatlar çekiliyor, lütfen bekleyiniz...")
     prices_text, image_url, product_title, _ = await get_prices_simple(asin)
-    signature = " "
-    message_text = f"*{product_title}*\n\n{prices_text}\n\n{signature}"
+    signature = "\n\n🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥Ilk🔥"
+    message_text = f"*{product_title}*\n\n{prices_text}{signature}"
 
     if image_url.startswith("http"):
         try:
