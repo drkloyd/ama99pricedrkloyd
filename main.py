@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 import aiohttp
-from keep_alive import keep_alive
+from keep_alive import keep_alive  # İstersen yoruma al
 
 # LOG AYARLARI
 logging.basicConfig(
@@ -113,7 +113,7 @@ async def get_prices_simple(asin: str, retries: int = 3) -> tuple[str, str, str,
                     prices_text, first_country = parse_prices_from_html(html, asin)
                     if "Ürün bulunamadı" in prices_text and attempt < retries:
                         logging.warning(f"{asin} için {attempt}. deneme başarısız, tekrar deneniyor...")
-                        await asyncio.sleep(1.5 * attempt)  # Artan bekleme süresi
+                        await asyncio.sleep(1.5 * attempt)
                         continue
                     image_url, product_title = await fetch_amazon_image_and_title_simple(asin, first_country)
                     return prices_text, image_url, product_title, first_country
@@ -124,7 +124,7 @@ async def get_prices_simple(asin: str, retries: int = 3) -> tuple[str, str, str,
             await asyncio.sleep(1.5 * attempt)
     return "❌ Ürün bulunamadı veya fiyat bilgisi yok.", "", "", "COM"
 
-async def handle_(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global last_heartbeat
     last_heartbeat = time.time()
     await asyncio.sleep(2)
@@ -135,7 +135,8 @@ async def handle_(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔍 Fiyatlar çekiliyor, lütfen bekleyiniz...")
     prices_text, image_url, product_title, _ = await get_prices_simple(asin)
-    message_text = f"*{product_title}*\n\n{prices_text}\n\n🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥Ilk🔥"
+    signature = "🔥Ens🔥Hsn🔥Ibr🔥Kad🔥Onr🔥Sdk🔥Ilk🔥"
+    message_text = f"*{product_title}*\n\n{prices_text}\n\n{signature}"
 
     if image_url.startswith("http"):
         try:
@@ -179,7 +180,7 @@ async def watchdog():
         await asyncio.sleep(60)
 
 def main():
-    keep_alive()
+    keep_alive()  # Gerekirse yoruma al
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     logging.info("✅ Bot hazır. Telegram'dan ASIN gönder...")
