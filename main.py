@@ -68,7 +68,7 @@ def parse_prices_from_html(html: str, asin: str) -> tuple[str, str]:
                 price_value = float(price_str)
                 kur = EXCHANGE_RATES.get(country_code, 1)
                 tl_value = price_value * kur
-                result += f"{country_name}: 💰 *{price_text}* → Amazon {int(tl_value)} TL [🔗 Bağlantıya git]({product_url})\n"
+                result += f"{country_name}: 💰 *{price_text}* → Amazon {int(tl_value)} TL [👉Bağlantıya git]({product_url})\n"
             except Exception as e:
                 logging.warning(f"TL dönüşüm hatası: {e}")
                 result += f"{country_name}: 💰 *{price_text}* → Amazon [🔗]({product_url})\n"
@@ -136,7 +136,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🔍 Fiyatlar çekiliyor, lütfen bekleyiniz...")
     prices_text, image_url, product_title, _ = await get_prices_simple(asin)
-    signature = "\n\n👤 Emeğin karşılığı olarak lütfen paylaşalım teşekkürler :)"
+    signature = "\n\n😊 Emeğin karşılığı olarak lütfen paylaşalım teşekkürler :)"
     message_text = f"*{product_title}*\n\n{prices_text}{signature}"
 
     if image_url.startswith("http"):
